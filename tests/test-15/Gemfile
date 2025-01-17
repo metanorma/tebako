@@ -2,7 +2,6 @@
 
 source "https://rubygems.org"
 
-ruby ">= 3.3.5"
 # Specify your gem's dependencies in tebako-bundle-test.gemspec
 gemspec
 

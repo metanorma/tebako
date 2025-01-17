@@ -26,6 +26,7 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 require "pathname"
+require "bundler"
 
 require_relative "error"
 
@@ -119,10 +120,18 @@ module Tebako
 
       return unless @with_gemfile
 
-      require "bundler"
-      gemfile = Bundler::Definition.build(gemfile_path, nil, nil)
+      process_gemfile(gemfile_path)
+    end
+
+    def process_gemfile(path)
+      # Assuming that it does not attempt to load any gems or resolve dependencies
+      # this can be done with any bundler version
+
+      gemfile = Bundler::Definition.build(path, nil, nil)
       @ruby_version = gemfile.ruby_version&.versions
       puts "-- Found Gemfile with Ruby version #{@ruby_version}"
+    rescue StandardError => e
+      Tebako.packaging_error(115, e.message)
     end
   end
 end
