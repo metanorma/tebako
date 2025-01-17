@@ -435,9 +435,9 @@ RSpec.describe Tebako::DeployHelper do
   end
 
   describe "#needs_bundler?" do
-    context "when @gf_length is greater than 0" do
+    context "when @with_gemfile is true" do
       before do
-        deploy_helper.instance_variable_set(:@gf_length, 1)
+        deploy_helper.instance_variable_set(:@with_gemfile, true)
       end
 
       context "and @ruby_ver is less than 3.1" do
@@ -470,9 +470,9 @@ RSpec.describe Tebako::DeployHelper do
       end
     end
 
-    context "when @gf_length is 0" do
+    context "when @with_gemfile is false" do
       before do
-        deploy_helper.instance_variable_set(:@gf_length, 0)
+        deploy_helper.instance_variable_set(:@with_gemfile, false)
       end
 
       context "and @ruby_ver is less than 3.1" do
