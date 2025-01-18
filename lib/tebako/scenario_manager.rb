@@ -26,6 +26,7 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 require "pathname"
+require "bundler"
 
 require_relative "error"
 
@@ -34,6 +35,7 @@ module Tebako
   # Manages packaging scenario based on input files (gemfile, gemspec, etc)
   class ScenarioManager
     def initialize(fs_root, fs_entrance)
+      @with_gemfile = false
       initialize_root(fs_root)
       initialize_entry_point(fs_entrance || "stub.rb")
     end
@@ -92,16 +94,16 @@ module Tebako
       when 0
         configure_scenario_no_gemspec
       when 1
-        @scenario = @gf_length.positive? ? :gemspec_and_gemfile : :gemspec
+        @scenario = @with_gemfile ? :gemspec_and_gemfile : :gemspec
       else
         raise Tebako::Error, "Multiple Ruby gemspecs found in #{@fs_root}"
       end
     end
 
     def configure_scenario_no_gemspec
-      @fs_entry_point = "/local/#{@fs_entrance}" if @gf_length.positive? || @g_length.zero?
+      @fs_entry_point = "/local/#{@fs_entrance}" if @with_gemfile || @g_length.zero?
 
-      @scenario = if @gf_length.positive?
+      @scenario = if @with_gemfile
                     :gemfile
                   elsif @g_length.positive?
                     :gem
@@ -111,9 +113,25 @@ module Tebako
     end
 
     def lookup_files
+      gemfile_path = File.join(@fs_root, "Gemfile")
       @gs_length = Dir.glob(File.join(@fs_root, "*.gemspec")).length
-      @gf_length = Dir.glob(File.join(@fs_root, "Gemfile")).length
+      @with_gemfile = File.exist?(gemfile_path)
       @g_length = Dir.glob(File.join(@fs_root, "*.gem")).length
+
+      return unless @with_gemfile
+
+      process_gemfile(gemfile_path)
+    end
+
+    def process_gemfile(path)
+      # Assuming that it does not attempt to load any gems or resolve dependencies
+      # this can be done with any bundler version
+
+      gemfile = Bundler::Definition.build(path, nil, nil)
+      @ruby_version = gemfile.ruby_version&.versions
+      puts "-- Found Gemfile with Ruby version #{@ruby_version}"
+    rescue StandardError => e
+      Tebako.packaging_error(115, e.message)
     end
   end
 end

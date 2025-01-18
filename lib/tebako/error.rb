@@ -42,12 +42,14 @@ module Tebako
     112 => "OS is not supported",
     113 => "Path to root shall be absolute. Relative path is not allowed",
     114 => "Entry point is not within the project root",
+    115 => "Failed to load Gemfile",
     201 => "Warning. Could not create cache version file"
   }.freeze
 
   class << self
-    def packaging_error(code)
+    def packaging_error(code, extm = nil)
       msg = PACKAGING_ERRORS[code]
+      msg += ": #{extm}" unless extm.nil?
       msg = "Unknown packaging error" if msg.nil?
       raise Tebako::Error.new msg, code
     end
